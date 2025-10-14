@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Knowledge Pack</title>
+  <link rel="cms-config-url" type="text/yaml" href="/api/admin/config" />
+</head>
+<body>
+  <!-- Include the script that builds the page and powers Decap CMS -->
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    // Simple authentication override for GitHub login
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded, checking authentication...');
+      
+      // Override GitHub login button clicks
+      setTimeout(() => {
+        // Use event delegation to handle dynamically created login buttons
+        document.addEventListener('click', function(e) {
+          // Check if clicked element or its parent is a GitHub login button
+          let target = e.target;
+          let attempts = 0;
+          
+          while (target && attempts < 5) {
+            const text = (target.textContent || '').toLowerCase();
+            const isGitHubButton = text.includes('login with github') || 
+                                   text.includes('github') && (text.includes('login') || text.includes('sign'));
+            
+            if (isGitHubButton) {
+              console.log('GitHub login button clicked, redirecting to GitHub OAuth');
+              e.preventDefault();
+              e.stopPropagation();
+              // Redirect to GitHub OAuth URL
+              const clientId = 'Ov23li5kbNATaXdde6rE';
+              const redirectUri = encodeURIComponent('http://localhost:3000/api/auth');
+              const scope = encodeURIComponent('repo user');
+              const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code`;
+              window.location.href = githubAuthUrl;
+              return false;
+            }
+            
+            target = target.parentElement;
+            attempts++;
+          }
+        }, true);
+      }, 1000);
+    });
+
+    // Handle successful authentication redirect - only once and only from auth flow
+    if (window.location.hash === '#/success' && !sessionStorage.getItem('redirected_to_collections')) {
+      console.log('Authentication successful, redirecting to collections/docs');
+      sessionStorage.setItem('redirected_to_collections', 'true');
+      // Direct redirect to collections/docs after success
+      setTimeout(() => {
+        window.location.href = '/admin/index.html#/collections/docs';
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

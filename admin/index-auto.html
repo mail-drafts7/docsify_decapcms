@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Knowledge Pack</title>
+  <link rel="cms-config-url" type="text/yaml" href="/api/admin/config-token" />
+</head>
+<body>
+  <!-- Include the script that builds the page and powers Decap CMS -->
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    // Automatic GitHub Authentication using stored token
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Setting up automatic authentication...');
+      
+      // Wait for CMS to load
+      const initCMS = () => {
+        if (typeof window.CMS !== 'undefined') {
+          console.log('CMS loaded, attempting auto-authentication...');
+          
+          // Auto-authenticate with stored token
+          fetch('/api/github-token')
+            .then(response => response.json())
+            .then(data => {
+              if (data.token) {
+                console.log('Token found, authenticating automatically...');
+                
+                // Store token in localStorage for CMS
+                localStorage.setItem('decap-cms-user', JSON.stringify({
+                  token: data.token,
+                  provider: 'github',
+                  backendName: 'github'
+                }));
+                
+                // Initialize CMS with token
+                window.CMS.init({
+                  config: {
+                    backend: {
+                      name: 'github',
+                      repo: 'mail-drafts7/docsify_decapcms',
+                      branch: 'main'
+                    }
+                  }
+                });
+                
+                // Reload to apply authentication
+                setTimeout(() => {
+                  window.location.reload();
+                }, 1000);
+              } else {
+                console.log('No token found, falling back to manual authentication');
+              }
+            })
+            .catch(error => {
+              console.log('Auto-auth failed, using manual login:', error);
+            });
+        } else {
+          setTimeout(initCMS, 100);
+        }
+      };
+      
+      initCMS();
+    });
+
+    // Handle successful authentication redirect
+    if (window.location.hash === '#success') {
+      console.log('Authentication successful, clearing hash');
+      window.history.replaceState(null, null, window.location.pathname);
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    }
+  </script>
+</body>
+</html>

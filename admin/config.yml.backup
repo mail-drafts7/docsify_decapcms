@@ -1,0 +1,49 @@
+backend:
+  name: github
+  repo: mail-drafts7/docsify_decapcms
+  branch: main
+  # Client ID will be loaded dynamically
+
+site_url: http://localhost:3000
+display_url: http://localhost:3000
+name: decap-cms
+logo_url: https://decapcms.org/img/decap-logo.svg
+
+media_folder: public/images
+public_folder: /images
+
+collections:
+  - name: "docs"
+    label: "Documentation"
+    folder: "content/docs"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "string", required: false }
+      - { label: "Body", name: "body", widget: "markdown" }
+      - { label: "Order", name: "order", widget: "number", required: false }
+  - name: "pages"
+    label: "Pages"
+    files:
+      - label: "Getting Started"
+        name: "getting-started"
+        file: "content/docs/getting-started.mdx"
+        fields:
+          - { label: "Title", name: "title", widget: "string" }
+          - { label: "Description", name: "description", widget: "string" }
+          - { label: "Body", name: "body", widget: "markdown" }
+      - label: "Testing"
+        name: "testing"
+        file: "content/docs/testing.mdx"
+        fields:
+          - { label: "Title", name: "title", widget: "string" }
+          - { label: "Description", name: "description", widget: "string" }
+          - { label: "Body", name: "body", widget: "markdown" }
+      - label: "API Contract"
+        name: "api-contract"
+        file: "content/docs/api-contract.mdx"
+        fields:
+          - { label: "Title", name: "title", widget: "string" }
+          - { label: "Description", name: "description", widget: "string" }
+          - { label: "Body", name: "body", widget: "markdown" }

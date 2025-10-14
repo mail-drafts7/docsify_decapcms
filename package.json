@@ -1,0 +1,28 @@
+{
+  "name": "docsify-decapcms",
+  "version": "1.0.0",
+  "description": "Docsify with DecapCMS integration",
+  "main": "auth-server.js",
+  "scripts": {
+    "start": "node auth-server.js",
+    "dev": "nodemon auth-server.js",
+    "install-deps": "npm install"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": [
+    "docsify",
+    "decapcms",
+    "documentation",
+    "cms"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

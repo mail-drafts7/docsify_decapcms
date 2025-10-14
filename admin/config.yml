@@ -1,0 +1,39 @@
+backend:
+  name: github
+  repo: mail-drafts7/docsify_decapcms
+  branch: main
+  client_id: Ov23li5kbNATaXdde6rE
+  base_url: http://localhost:3000
+  auth_endpoint: api/auth
+
+site_url: http://localhost:3000
+display_url: http://localhost:3000
+
+media_folder: assets/images
+public_folder: /assets/images
+
+collections:
+  - name: "docs"
+    label: "Documentation"
+    folder: "docs"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    format: "frontmatter"
+    editor:
+      preview: true
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "string", required: false }
+      - { label: "Order", name: "order", widget: "number", default: 1, value_type: "int" }
+      - { label: "Category", name: "category", widget: "string", default: "docs" }
+      - { label: "Date", name: "date", widget: "datetime", required: false }
+      - { label: "Author", name: "author", widget: "string", required: false }
+      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Body", name: "body", widget: "markdown" }
+
+editor:
+  preview: true
+
+# Enable editorial workflow for PR approval process
+publish_mode: editorial_workflow
