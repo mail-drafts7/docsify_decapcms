@@ -232,30 +232,57 @@ app.get('/api/content', async (req, res) => {
 // GitHub webhook endpoint for automatic updates
 app.post('/api/webhook', async (req, res) => {
   try {
-    const { action, commits } = req.body;
+    const { action, commits, pull_request } = req.body;
     
-    // Check if this is a push to main branch
-    if (req.body.ref === 'refs/heads/main' || action === 'published') {
-      console.log('📝 GitHub webhook received - updating sidebar');
+    console.log('📡 Webhook received:', { action, ref: req.body.ref });
+    
+    // Check if this is a push to main branch or PR merge
+    const isMainBranchPush = req.body.ref === 'refs/heads/main';
+    const isPRMerged = action === 'closed' && pull_request?.merged === true;
+    const isPublished = action === 'published';
+    
+    if (isMainBranchPush || isPRMerged || isPublished) {
+      console.log('🔄 Triggering update process...');
       
       // Check if any markdown files were modified
-      const hasMarkdownChanges = commits && commits.some(commit => 
-        commit.added?.some(file => file.endsWith('.md')) ||
-        commit.modified?.some(file => file.endsWith('.md')) ||
-        commit.removed?.some(file => file.endsWith('.md'))
-      );
+      let hasMarkdownChanges = false;
+      if (commits) {
+        hasMarkdownChanges = commits.some(commit => 
+          commit.added?.some(file => file.endsWith('.md')) ||
+          commit.modified?.some(file => file.endsWith('.md')) ||
+          commit.removed?.some(file => file.endsWith('.md'))
+        );
+      } else if (isPRMerged) {
+        // For PR merges, assume there might be changes
+        hasMarkdownChanges = true;
+      }
 
-      if (hasMarkdownChanges || action === 'published') {
-        // Wait a moment for files to be updated, then update sidebar
-        setTimeout(async () => {
-          await contentManager.updateSidebar();
-        }, 2000);
+      if (hasMarkdownChanges || isPRMerged || isPublished) {
+        console.log('📥 Pulling latest changes from GitHub...');
+        
+        // Pull latest changes from GitHub
+        const { exec } = require('child_process');
+        exec(`GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_personal" git pull origin main`, async (error, stdout, stderr) => {
+          if (error) {
+            console.error('❌ Git pull error:', error);
+            return;
+          }
+          
+          console.log('✅ Git pull successful:', stdout);
+          
+          // Wait a moment for files to be updated, then update sidebar
+          setTimeout(async () => {
+            console.log('🔄 Updating sidebar...');
+            await contentManager.updateSidebar();
+            console.log('✅ Sidebar updated after PR merge');
+          }, 1000);
+        });
       }
     }
     
-    res.status(200).json({ message: 'Webhook processed' });
+    res.status(200).json({ message: 'Webhook processed successfully' });
   } catch (error) {
-    console.error('Webhook error:', error);
+    console.error('❌ Webhook error:', error);
     res.status(500).json({ error: error.message });
   }
 });
