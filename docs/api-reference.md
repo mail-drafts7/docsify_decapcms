@@ -1,5 +1,5 @@
 ---
-title: API Reference Guide Test
+title: API Reference Guide
 description: Comprehensive API reference for developers integrating with our platform
 order: 1
 category: docs
@@ -14,10 +14,11 @@ tags:
 
 This comprehensive API reference provides detailed information for developers integrating with our platform.
 
-## 🔥 **NEW UPDATE - Testing PR Workflow** 
+## 🔥 **NEW UPDATE - Testing PR Workflow**
+
 This section was added to test automatic updates when PRs are merged. If you can see this text, the webhook system is working perfectly!
 
----
+- - -
 
 ## Authentication
 
