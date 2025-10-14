@@ -12,7 +12,21 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static('.')); // Serve static files
-app.use('/admin', express.static('admin')); // Explicitly serve admin folder
+
+// Fix admin routing - serve admin/index.html for all admin paths
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin', 'index.html'));
+});
+
+app.get('/admin/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin', 'index.html'));
+});
+
+app.get('/admin/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin', 'index.html'));
+});
+
+app.use('/admin', express.static('admin')); // Serve admin static files
 
 // Content management utilities  
 class ContentManager {

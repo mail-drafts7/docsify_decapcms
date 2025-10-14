@@ -311,7 +311,8 @@
       // Handle admin selection - redirect to /admin
       console.log('Admin selected');
       document.getElementById('loginDropdown').classList.remove('active');
-      window.location.href = '/admin/';
+      // Use absolute path to ensure proper routing
+      window.location.href = window.location.origin + '/admin/';
     }
     
     // Close dropdown with Escape key

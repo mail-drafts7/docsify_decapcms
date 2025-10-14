@@ -46,25 +46,56 @@
         // Let DecapCMS handle its own initialization
         console.log('DecapCMS should initialize automatically');
         
-        // Override login button clicks after CMS loads
-        setTimeout(() => {
-          const loginButtons = document.querySelectorAll('button');
+        // Configure DecapCMS to use custom auth backend
+        if (window.CMS) {
+          console.log('DecapCMS loaded, configuring auth...');
+          // Register custom auth backend
+          window.CMS.registerBackend('github', window.GitHubBackend);
+        }
+
+        // Override login button clicks after CMS loads with better detection
+        function overrideLoginButtons() {
+          const loginButtons = document.querySelectorAll('button, [role="button"], a');
+          let buttonFound = false;
+          
           loginButtons.forEach(button => {
-            if (button.textContent.toLowerCase().includes('login with github')) {
+            const text = button.textContent || button.innerText || '';
+            if (text.toLowerCase().includes('login') && text.toLowerCase().includes('github')) {
               button.addEventListener('click', (e) => {
                 e.preventDefault();
-                console.log('Redirecting to GitHub OAuth...');
+                e.stopPropagation();
+                console.log('GitHub login clicked, redirecting to OAuth...');
                 
-                const clientId = 'Ov23li5kbNATaXdde6rE';
-                const redirectUri = encodeURIComponent('http://localhost:3000/api/auth');
-                const scope = encodeURIComponent('repo user');
-                const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
-                
-                window.location.href = githubAuthUrl;
-              });
+                // Get client ID from config API
+                fetch('/api/config')
+                  .then(response => response.json())
+                  .then(config => {
+                    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${config.clientId}&redirect_uri=${encodeURIComponent(config.redirectUri)}&scope=${encodeURIComponent(config.scope)}`;
+                    console.log('Redirecting to:', githubAuthUrl);
+                    window.location.href = githubAuthUrl;
+                  })
+                  .catch(error => {
+                    console.error('Failed to get config:', error);
+                    // Fallback with hardcoded values
+                    const clientId = 'Ov23li5kbNATaXdde6rE';
+                    const redirectUri = encodeURIComponent('http://localhost:3000/api/auth');
+                    const scope = encodeURIComponent('repo user');
+                    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+                    window.location.href = githubAuthUrl;
+                  });
+              }, { capture: true, once: false });
+              buttonFound = true;
+              console.log('GitHub login button override applied');
             }
           });
-        }, 2000);
+          
+          if (!buttonFound) {
+            setTimeout(overrideLoginButtons, 500);
+          }
+        }
+        
+        // Start looking for login buttons
+        setTimeout(overrideLoginButtons, 1000);
         
         // Remove Quick Add buttons
         function removeQuickAddButtons() {
