@@ -13,7 +13,7 @@ media_folder: assets/images
 public_folder: /assets/images
 
 collections:
-  - name: "documentation"
+  - name: "docs"
     label: "📚 Documentation"
     label_singular: "Document"
     folder: "docs"

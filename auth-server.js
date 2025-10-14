@@ -165,7 +165,7 @@ app.get('/api/auth', async (req, res) => {
       return res.status(400).json({ error: error });
     }
 
-    // Return success page with automatic redirect to CMS dashboard
+    // Return success page that stores auth and redirects to admin with token in URL
     res.send(`
       <html>
         <head>
@@ -175,20 +175,14 @@ app.get('/api/auth', async (req, res) => {
           <h1>Authentication Successful!</h1>
           <p>Redirecting to CMS dashboard...</p>
           <script>
-            // Store authentication in localStorage for DecapCMS
-            localStorage.setItem('decap-cms-user', JSON.stringify({
-              token: "${access_token}",
-              provider: "github",
-              backendName: "github"
-            }));
+            console.log('Auth callback received, setting up authentication...');
             
-            // Store token for session
-            sessionStorage.setItem('github-token', "${access_token}");
+            // Redirect to admin with token as URL parameter for manual injection
+            const token = "${access_token}";
+            const adminUrl = '/admin/index.html?token=' + encodeURIComponent(token) + '#/collections/docs';
             
-            // Direct redirect to admin dashboard
-            setTimeout(() => {
-              window.location.href = '/admin/#/collections/docs';
-            }, 1000);
+            console.log('Redirecting to admin with token parameter...');
+            window.location.href = adminUrl;
           </script>
         </body>
       </html>
