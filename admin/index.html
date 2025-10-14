@@ -30,25 +30,15 @@
                                    text.includes('github') && (text.includes('login') || text.includes('sign'));
             
             if (isGitHubButton) {
-              console.log('GitHub login button clicked, fetching OAuth configuration...');
+              console.log('GitHub login button clicked, redirecting to GitHub OAuth');
               e.preventDefault();
               e.stopPropagation();
-              
-              // Fetch OAuth configuration from server
-              fetch('/api/config')
-                .then(response => response.json())
-                .then(config => {
-                  const redirectUri = encodeURIComponent(config.redirectUri);
-                  const scope = encodeURIComponent(config.scope);
-                  const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${config.clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code`;
-                  window.location.href = githubAuthUrl;
-                })
-                .catch(error => {
-                  console.error('Failed to fetch OAuth configuration:', error);
-                  // Fallback to environment default if available
-                  alert('Failed to load OAuth configuration. Please check server configuration.');
-                });
-              
+              // Redirect to GitHub OAuth URL
+              const clientId = 'Ov23li5kbNATaXdde6rE';
+              const redirectUri = encodeURIComponent('http://localhost:3000/api/auth');
+              const scope = encodeURIComponent('repo user');
+              const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code`;
+              window.location.href = githubAuthUrl;
               return false;
             }
             

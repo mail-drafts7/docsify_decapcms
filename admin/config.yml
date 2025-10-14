@@ -2,7 +2,7 @@ backend:
   name: github
   repo: mail-drafts7/docsify_decapcms
   branch: main
-  client_id: {{GITHUB_CLIENT_ID}}
+  client_id: Ov23li5kbNATaXdde6rE
   base_url: http://localhost:3000
   auth_endpoint: api/auth
 
