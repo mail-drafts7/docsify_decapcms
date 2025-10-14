@@ -6,6 +6,7 @@
   <meta name="robots" content="noindex" />
   <title>Knowledge Pack</title>
   <link rel="cms-config-url" type="text/yaml" href="/api/admin/config" />
+  <link rel="stylesheet" href="custom.css" />
 </head>
 <body>
   <!-- Include the script that builds the page and powers Decap CMS -->
@@ -57,6 +58,96 @@
         window.location.href = '/admin/index.html#/collections/docs';
       }, 1000);
     }
+
+    // SUPER AGGRESSIVE removal of Quick Add button
+    function removeQuickAddButtons() {
+      // Remove by text content
+      const buttons = document.querySelectorAll('button, a, div');
+      buttons.forEach(button => {
+        const text = (button.textContent || '').toLowerCase();
+        if (text.includes('quick add') || text.includes('quickadd') || text === 'quick add') {
+          button.style.display = 'none !important';
+          button.style.visibility = 'hidden !important';
+          button.style.opacity = '0 !important';
+          button.style.width = '0px !important';
+          button.style.height = '0px !important';
+          button.style.position = 'absolute !important';
+          button.style.left = '-9999px !important';
+          if (button.parentNode) {
+            button.parentNode.removeChild(button);
+          }
+        }
+      });
+
+      // Target header buttons specifically
+      const headerButtons = document.querySelectorAll('header button, .css-1w84va-AppHeaderButton');
+      headerButtons.forEach((button, index) => {
+        const text = (button.textContent || '').toLowerCase();
+        if (text.includes('quick') || index === headerButtons.length - 1) {
+          button.style.display = 'none !important';
+          button.style.visibility = 'hidden !important';
+          button.style.opacity = '0 !important';
+          if (button.parentNode) {
+            try {
+              button.parentNode.removeChild(button);
+            } catch (e) {
+              // Ignore errors
+            }
+          }
+        }
+      });
+
+      // Remove by common selectors - MORE AGGRESSIVE
+      const selectors = [
+        '[data-testid="quick-add"]',
+        'button[title*="Quick"]',
+        'button[aria-label*="Quick"]',
+        '.cms-topbar button:last-child',
+        '.cms-navbar button:last-child',
+        'nav button:last-child',
+        'header button:last-child',
+        '[class*="QuickAdd"]',
+        '[class*="quickAdd"]',
+        'button[class*="Quick"]',
+        '.css-1w84va-AppHeaderButton'
+      ];
+
+      selectors.forEach(selector => {
+        try {
+          const elements = document.querySelectorAll(selector);
+          elements.forEach(el => {
+            const text = (el.textContent || '').toLowerCase();
+            if (text.includes('quick')) {
+              el.style.display = 'none !important';
+              el.style.visibility = 'hidden !important';
+              el.style.opacity = '0 !important';
+              el.style.width = '0px !important';
+              el.style.height = '0px !important';
+              el.style.position = 'absolute !important';
+              el.style.left = '-9999px !important';
+              if (el.parentNode) {
+                try {
+                  el.parentNode.removeChild(el);
+                } catch (e) {
+                  // Ignore errors
+                }
+              }
+            }
+          });
+        } catch (e) {
+          // Ignore selector errors
+        }
+      });
+    }
+
+    // Run removal VERY frequently to catch all dynamically loaded buttons
+    setInterval(removeQuickAddButtons, 500);
+    setTimeout(removeQuickAddButtons, 100);
+    setTimeout(removeQuickAddButtons, 500);
+    setTimeout(removeQuickAddButtons, 1000);
+    setTimeout(removeQuickAddButtons, 2000);
+    setTimeout(removeQuickAddButtons, 5000);
+    setTimeout(removeQuickAddButtons, 10000);
   </script>
 </body>
 </html>

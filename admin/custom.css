@@ -1,0 +1,192 @@
+/* Custom styles for Decap CMS interface */
+
+/* Hide ALL quick add buttons everywhere - AGGRESSIVE RULES */
+[data-testid="quick-add"],
+.nc-collectionPage-quickAdd,
+.nc-quickAdd,
+.nc-collectionPage-header .nc-collectionPage-newEntryButton,
+.nc-entryListing-quickAdd,
+.nc-quickAddButton, 
+.nc-floatingButton,
+button[title="Quick add"],
+button[aria-label="Quick add"],
+.cms-quick-add,
+.cms-button-quick-add,
+button:contains("Quick add"),
+button[class*="QuickAdd"],
+button[class*="quickAdd"],
+[class*="QuickAdd"],
+[class*="quickAdd"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* Hide quick add from top navigation - MORE AGGRESSIVE */
+.cms-topbar-quick-add,
+.cms-navbar .cms-button:last-child,
+nav button:last-child,
+header button:last-child,
+[role="navigation"] button:last-child {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Target ANY button containing "Quick" text */
+button {
+  &:contains("Quick") {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+/* Hide the specific Quick add button visible in screenshot */
+header .css-1w84va-AppHeaderButton:last-child,
+header button:nth-last-child(1),
+header button:nth-last-child(2) {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Improve table layout for documentation files */
+.nc-collectionPage-entries {
+  display: table !important;
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+/* Style table headers */
+.nc-collectionPage-entries .nc-collectionPage-entriesHeader {
+  display: table-header-group !important;
+  background-color: #f8f9fa !important;
+  font-weight: 600 !important;
+  border-bottom: 2px solid #dee2e6 !important;
+}
+
+.nc-collectionPage-entries .nc-collectionPage-entriesHeader > div {
+  display: table-cell !important;
+  padding: 12px 16px !important;
+  text-align: left !important;
+  vertical-align: middle !important;
+  border-right: 1px solid #dee2e6 !important;
+}
+
+/* Style table rows */
+.nc-collectionPage-entries .nc-collectionPage-entry {
+  display: table-row !important;
+  border-bottom: 1px solid #eee !important;
+}
+
+.nc-collectionPage-entries .nc-collectionPage-entry:hover {
+  background-color: #f8f9fa !important;
+}
+
+/* Style table cells */
+.nc-collectionPage-entries .nc-collectionPage-entry > div {
+  display: table-cell !important;
+  padding: 12px 16px !important;
+  vertical-align: middle !important;
+  border-right: 1px solid #eee !important;
+}
+
+/* Improve file list appearance */
+.nc-collectionPage-entries .nc-collectionPage-entryTitle {
+  font-weight: 500 !important;
+  color: #2c3e50 !important;
+  text-decoration: none !important;
+}
+
+.nc-collectionPage-entries .nc-collectionPage-entryTitle:hover {
+  color: #3498db !important;
+  text-decoration: underline !important;
+}
+
+/* Style entry metadata */
+.nc-collectionPage-entries .nc-collectionPage-entryMeta {
+  color: #6c757d !important;
+  font-size: 0.875rem !important;
+}
+
+/* Make documentation section more prominent */
+.nc-collectionList-item[data-collection="documentation"] {
+  background-color: #e8f4fd !important;
+  border-left: 4px solid #3498db !important;
+}
+
+.nc-collectionList-item[data-collection="documentation"] .nc-collectionList-itemTitle {
+  font-weight: 600 !important;
+  color: #2c3e50 !important;
+}
+
+/* Additional Quick add button hiding for new configuration */
+button[class*="Quick"],
+[class*="quick-add"],
+[data-testid*="quick"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Add spacing and better organization */
+.nc-collectionPage-main {
+  padding: 20px !important;
+}
+
+/* Style the collection header */
+.nc-collectionPage-header h1 {
+  font-size: 1.75rem !important;
+  font-weight: 600 !important;
+  color: #2c3e50 !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Improve collection description */
+.nc-collectionPage-header p {
+  color: #6c757d !important;
+  margin-bottom: 1.5rem !important;
+}
+
+/* Style search and filter controls */
+.nc-collectionPage-toolbar {
+  background-color: #fff !important;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 6px !important;
+  padding: 12px 16px !important;
+  margin-bottom: 20px !important;
+}
+
+/* Only show add button in the toolbar area, not as floating button */
+.nc-collectionPage-toolbar .nc-button {
+  background-color: #3498db !important;
+  border: none !important;
+  color: white !important;
+  padding: 8px 16px !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+}
+
+.nc-collectionPage-toolbar .nc-button:hover {
+  background-color: #2980b9 !important;
+}
+
+/* Hide the floating add button completely */
+.nc-entryListing-quickAdd,
+.nc-quickAddButton,
+.nc-floatingButton {
+  display: none !important;
+}
+
+/* Ensure table is responsive */
+@media (max-width: 768px) {
+  .nc-collectionPage-entries .nc-collectionPage-entry > div {
+    padding: 8px 12px !important;
+    font-size: 0.875rem !important;
+  }
+}

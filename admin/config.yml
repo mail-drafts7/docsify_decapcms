@@ -13,48 +13,23 @@ media_folder: assets/images
 public_folder: /assets/images
 
 collections:
-  - name: "content"
-    label: "All Content"
-    files:
-      - label: "API Reference Guide"
-        name: "api-reference"
-        file: "docs/api-reference.md"
-        fields:
-          - { label: "Title", name: "title", widget: "string" }
-          - { label: "Description", name: "description", widget: "string", required: false }
-          - { label: "Order", name: "order", widget: "number", default: 1, value_type: "int" }
-          - { label: "Category", name: "category", widget: "select", options: ["docs", "tutorials", "guides"], default: "docs" }
-          - { label: "Date", name: "date", widget: "datetime", required: false }
-          - { label: "Author", name: "author", widget: "string", required: false }
-          - { label: "Tags", name: "tags", widget: "list", required: false }
-          - { label: "Body", name: "body", widget: "markdown" }
-      - label: "Getting Started Guide"
-        name: "getting-started"
-        file: "tutorials/getting-started-guide.md"
-        fields:
-          - { label: "Title", name: "title", widget: "string" }
-          - { label: "Description", name: "description", widget: "string", required: false }
-          - { label: "Order", name: "order", widget: "number", default: 1, value_type: "int" }
-          - { label: "Category", name: "category", widget: "select", options: ["docs", "tutorials", "guides"], default: "tutorials" }
-          - { label: "Date", name: "date", widget: "datetime", required: false }
-          - { label: "Author", name: "author", widget: "string", required: false }
-          - { label: "Tags", name: "tags", widget: "list", required: false }
-          - { label: "Body", name: "body", widget: "markdown" }
-      - label: "User-Friendly Setup Guide"
-        name: "setup-guide"
-        file: "guides/user-friendly-setup.md"
-        fields:
-          - { label: "Title", name: "title", widget: "string" }
-          - { label: "Description", name: "description", widget: "string", required: false }
-          - { label: "Order", name: "order", widget: "number", default: 1, value_type: "int" }
-          - { label: "Category", name: "category", widget: "select", options: ["docs", "tutorials", "guides"], default: "guides" }
-          - { label: "Date", name: "date", widget: "datetime", required: false }
-          - { label: "Author", name: "author", widget: "string", required: false }
-          - { label: "Tags", name: "tags", widget: "list", required: false }
-          - { label: "Body", name: "body", widget: "markdown" }
+  - name: "documentation"
+    label: "📚 Documentation"
+    label_singular: "Document"
+    folder: "docs"
+    create: true
+    slug: "{{slug}}"
+    summary: "{{title}}"
+    sortable_fields: ["title", "date", "order"]
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "string", required: false }
+      - { label: "Order", name: "order", widget: "number", default: 1, value_type: "int" }
+      - { label: "Category", name: "category", widget: "hidden", default: "docs" }
+      - { label: "Date", name: "date", widget: "datetime", required: false }
+      - { label: "Author", name: "author", widget: "string", required: false }
+      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Body", name: "body", widget: "markdown" }
 
 editor:
   preview: true
-
-# Enable editorial workflow for PR approval process
-publish_mode: editorial_workflow
