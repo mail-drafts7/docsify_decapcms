@@ -7,13 +7,250 @@
   <meta name="description" content="Description">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+  <style>
+    /* Header Styles */
+    .knowledge-pack-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 300px;
+      background: #fff;
+      border-right: 1px solid #eee;
+      z-index: 999;
+      padding: 15px 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      height: 130px;
+      box-sizing: border-box;
+    }
+    
+    .knowledge-pack-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #42b883;
+      margin: 0 0 15px 0;
+      text-align: center;
+    }
+    
+    /* Custom Search Bar */
+    .custom-search {
+      position: relative;
+      margin-bottom: 15px;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 12px 40px 12px 40px;
+      border: 2px solid #eee;
+      border-radius: 25px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s ease;
+      box-sizing: border-box;
+    }
+    
+    .search-input:focus {
+      border-color: #42b883;
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 16px;
+    }
+    
+    .clear-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 16px;
+      cursor: pointer;
+      display: none;
+    }
+    
+    .clear-icon:hover {
+      color: #666;
+    }
+    
+    /* Adjust sidebar to account for header */
+    .sidebar {
+      padding-top: 150px !important;
+    }
+    
+    /* Adjust main content */
+    .content {
+      padding-top: 40px !important;
+      margin-left: 10px !important;
+      padding-left: 10px !important;
+      padding-right: 40px !important;
+    }
+    
+    /* Fix sidebar navigation positioning */
+    .sidebar nav {
+      padding-top: 10px;
+    }
+    
+    /* Ensure proper spacing for sidebar content */
+    .sidebar ul {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+    }
+    
+    /* Fix Home section positioning and padding */
+    .sidebar li:first-child {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+    }
+    
+    /* Better spacing for all sidebar items */
+    .sidebar li {
+      margin-bottom: 2px;
+      line-height: 1.8;
+    }
+    
+    /* Improve nested items padding and spacing */
+    .sidebar ul ul {
+      padding-left: 10px !important;
+      margin-top: 10px !important;
+      margin-bottom: 10px !important;
+    }
+    
+    /* Add spacing to nested sub-items */
+    .sidebar ul ul li {
+      margin-bottom: 4px !important;
+      padding-left: 6px !important;
+    }
+    
+    /* Fix spacing after Knowledge Pack sections */
+    .sidebar > ul > li {
+      margin-bottom: 10px !important;
+    }
+    
+    /* Add proper spacing between main sections */
+    .sidebar > ul > li:not(:last-child) {
+      border-bottom: 1px solid #f0f0f0;
+      padding-bottom: 12px !important;
+      margin-bottom: 18px !important;
+    }
+    
+    /* Add visual space before sub-sections */
+    .sidebar > ul > li > ul {
+      margin-top: 10px !important;
+      border-left: 2px solid #f8f8f8;
+      padding-left: 15px !important;
+    }
+    
+    /* Ensure main content has proper top spacing */
+    .markdown-section h1:first-child {
+      margin-top: 20px !important;
+    }
+
+    /* Login Button Styles */
+    .login-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+    
+    .login-btn {
+      background: #42b883;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background 0.3s ease;
+    }
+    
+    .login-btn:hover {
+      background: #369970;
+    }
+    
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: white;
+      width: 100%;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+    
+    .dropdown-content a {
+      color: #2c3e50;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      font-size: 14px;
+      transition: background 0.3s ease;
+    }
+    
+    .dropdown-content a:hover {
+      background-color: #f1f1f1;
+    }
+    
+    .dropdown.active .dropdown-content {
+      display: block;
+    }
+    
+    /* Hide default Docsify search */
+    .search {
+      display: none !important;
+    }
+    
+    /* Hide default Docsify app name in sidebar */
+    .app-name {
+      display: none !important;
+    }
+    
+    .sidebar .app-name {
+      display: none !important;
+    }
+  </style>
 </head>
 <body>
+  <!-- Knowledge Pack Header -->
+  <div class="knowledge-pack-header">
+    <h1 class="knowledge-pack-title">Knowledge Packs</h1>
+    <div class="custom-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="customSearchInput" placeholder="Search...">
+      <span class="clear-icon" id="clearIcon" onclick="clearSearch()">✖</span>
+    </div>
+  </div>
+
   <div id="app"></div>
+  
+  <!-- Login Dropdown -->
+  <div class="login-container">
+    <div class="dropdown" id="loginDropdown">
+      <button class="login-btn" onclick="toggleDropdown()">Login ▼</button>
+      <div class="dropdown-content">
+        <a href="#" onclick="selectUser()">User</a>
+        <a href="#" onclick="selectAdmin()">Admin</a>
+      </div>
+    </div>
+  </div>
   <script>
     window.$docsify = {
       name: 'Knowledge Pack',
-      loadSidebar: true,
+      homepage: 'home.md',
+      loadSidebar: 'docs/_sidebar.md',
       autoHeader: true,
       subMaxLevel: 2,
       auto2top: true,
@@ -24,7 +261,19 @@
         noData: 'No Results!',
         depth: 4,
         hideOtherSidebarContent: false,
-      }
+      },
+      plugins: [
+        function(hook, vm) {
+          // Re-initialize search after each route change
+          hook.doneEach(function() {
+            setTimeout(() => {
+              if (window.reinitializeSearch) {
+                window.reinitializeSearch();
+              }
+            }, 100);
+          });
+        }
+      ]
     }
   </script>
   <!-- Docsify v4 -->
@@ -35,5 +284,237 @@
   <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
   <!-- CMS Integration for automatic sidebar updates -->
   <script src="./assets/js/cms-integration.js"></script>
+  
+  <!-- Login Dropdown JavaScript -->
+  <script>
+    function toggleDropdown() {
+      const dropdown = document.getElementById('loginDropdown');
+      dropdown.classList.toggle('active');
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(event) {
+        if (!dropdown.contains(event.target)) {
+          dropdown.classList.remove('active');
+        }
+      });
+    }
+    
+    function selectUser() {
+      // Handle user selection
+      console.log('User selected');
+      document.getElementById('loginDropdown').classList.remove('active');
+      // Add user functionality here if needed
+      alert('User login functionality - to be implemented');
+    }
+    
+    function selectAdmin() {
+      // Handle admin selection - redirect to /admin
+      console.log('Admin selected');
+      document.getElementById('loginDropdown').classList.remove('active');
+      window.location.href = '/admin/';
+    }
+    
+    // Close dropdown with Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        document.getElementById('loginDropdown').classList.remove('active');
+      }
+    });
+    
+    // Custom Search Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.getElementById('customSearchInput');
+      const clearIcon = document.getElementById('clearIcon');
+      let sidebarItems = [];
+      let isInitialized = false;
+      let searchEventListenerAdded = false;
+      
+      // Function to initialize sidebar items
+      function initializeSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+          sidebarItems = Array.from(sidebar.querySelectorAll('li'));
+          isInitialized = true;
+          console.log('Sidebar items found:', sidebarItems.length);
+          return true;
+        }
+        return false;
+      }
+      
+      // Wait for Docsify to load and retry initialization
+      function waitForSidebar(callback = null) {
+        let attempts = 0;
+        const maxAttempts = 20;
+        
+        const interval = setInterval(() => {
+          attempts++;
+          const sidebar = document.querySelector('.sidebar ul');
+          
+          if (sidebar && sidebar.children.length > 0) {
+            const success = initializeSidebar();
+            clearInterval(interval);
+            if (callback && success) callback();
+          } else if (attempts >= maxAttempts) {
+            console.log('Sidebar loading timeout');
+            clearInterval(interval);
+          }
+        }, 200);
+      }
+      
+      // Global function to reinitialize search (called by Docsify plugin)
+      window.reinitializeSearch = function() {
+        console.log('Reinitializing search...');
+        isInitialized = false;
+        sidebarItems = [];
+        waitForSidebar(() => {
+          // If there's a current search term, reapply it
+          const currentSearch = searchInput.value.toLowerCase();
+          if (currentSearch.length > 0) {
+            performSearch(currentSearch);
+          }
+        });
+      };
+      
+      // Initialize search event listener only once
+      function initializeSearchListener() {
+        if (searchEventListenerAdded) return;
+        
+        // Show/hide clear icon and perform search
+        searchInput.addEventListener('input', function() {
+          const searchTerm = this.value.toLowerCase();
+          
+          if (searchTerm.length > 0) {
+            clearIcon.style.display = 'block';
+            if (!isInitialized) {
+              waitForSidebar(() => {
+                performSearch(searchTerm);
+              });
+            } else {
+              performSearch(searchTerm);
+            }
+          } else {
+            clearIcon.style.display = 'none';
+            showAllItems();
+          }
+        });
+        
+        searchEventListenerAdded = true;
+      }
+      
+      // Search function
+      function performSearch(searchTerm) {
+        if (!isInitialized || sidebarItems.length === 0) {
+          console.log('Sidebar not ready for search, reinitializing...');
+          waitForSidebar(() => {
+            performSearch(searchTerm);
+          });
+          return;
+        }
+        
+        let hasResults = false;
+        sidebarItems.forEach(item => {
+          const text = item.textContent.toLowerCase();
+          if (text.includes(searchTerm)) {
+            item.style.display = 'list-item';
+            highlightText(item, searchTerm);
+            hasResults = true;
+            
+            // Show parent if this is a child item
+            let parent = item.closest('ul').closest('li');
+            if (parent) {
+              parent.style.display = 'list-item';
+            }
+          } else {
+            item.style.display = 'none';
+          }
+        });
+        
+        if (!hasResults) {
+          console.log('No results found for:', searchTerm);
+        }
+      }
+      
+      // Show all items
+      function showAllItems() {
+        if (!isInitialized || sidebarItems.length === 0) {
+          waitForSidebar(() => {
+            showAllItems();
+          });
+          return;
+        }
+        
+        sidebarItems.forEach(item => {
+          item.style.display = 'list-item';
+          removeHighlight(item);
+        });
+      }
+      
+      // Highlight matching text
+      function highlightText(element, searchTerm) {
+        const textNodes = getTextNodes(element);
+        textNodes.forEach(textNode => {
+          if (textNode.parentNode.tagName !== 'MARK') {
+            const text = textNode.textContent;
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            if (regex.test(text)) {
+              const highlightedHTML = text.replace(regex, '<mark style="background: #ffeb3b;">$1</mark>');
+              const wrapper = document.createElement('span');
+              wrapper.innerHTML = highlightedHTML;
+              textNode.parentNode.replaceChild(wrapper, textNode);
+            }
+          }
+        });
+      }
+      
+      // Get text nodes
+      function getTextNodes(element) {
+        const textNodes = [];
+        const walker = document.createTreeWalker(
+          element,
+          NodeFilter.SHOW_TEXT,
+          null,
+          false
+        );
+        
+        let node;
+        while (node = walker.nextNode()) {
+          if (node.textContent.trim()) {
+            textNodes.push(node);
+          }
+        }
+        return textNodes;
+      }
+      
+      // Remove highlight
+      function removeHighlight(element) {
+        const marks = element.querySelectorAll('mark');
+        marks.forEach(mark => {
+          const parent = mark.parentNode;
+          parent.replaceChild(document.createTextNode(mark.textContent), mark);
+          parent.normalize();
+        });
+        
+        // Also remove spans created by highlighting
+        const spans = element.querySelectorAll('span');
+        spans.forEach(span => {
+          if (span.innerHTML.includes('<mark')) {
+            span.outerHTML = span.textContent;
+          }
+        });
+      }
+      
+      // Clear search function
+      window.clearSearch = function() {
+        searchInput.value = '';
+        clearIcon.style.display = 'none';
+        showAllItems();
+        searchInput.focus();
+      };
+      
+      // Initialize everything
+      initializeSearchListener();
+      waitForSidebar();
+    });
+  </script>
 </body>
 </html>

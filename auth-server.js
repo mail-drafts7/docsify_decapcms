@@ -199,10 +199,23 @@ app.get('/api/auth', async (req, res) => {
   }
 });
 
-// Serve DecapCMS config
-app.get('/api/admin/config', (req, res) => {
-  res.setHeader('Content-Type', 'text/yaml');
-  res.sendFile(__dirname + '/admin/config.yml');
+// Serve DecapCMS config with environment variables injected
+app.get('/api/admin/config', async (req, res) => {
+  try {
+    const configContent = await fs.readFile(__dirname + '/admin/config.yml', 'utf-8');
+    
+    // Replace placeholder with actual client ID from environment
+    const updatedConfig = configContent.replace(
+      '{{GITHUB_CLIENT_ID}}', 
+      process.env.GITHUB_CLIENT_ID || ''
+    );
+    
+    res.setHeader('Content-Type', 'text/yaml');
+    res.send(updatedConfig);
+  } catch (error) {
+    console.error('Error serving config:', error);
+    res.status(500).json({ error: 'Failed to load configuration' });
+  }
 });
 
 // API endpoint to manually update sidebar
@@ -373,6 +386,15 @@ app.post('/api/create-pr', async (req, res) => {
     console.error('PR creation error:', error);
     res.status(500).json({ error: error.message });
   }
+});
+
+// Endpoint to serve client configuration for frontend
+app.get('/api/config', (req, res) => {
+  res.json({
+    clientId: process.env.GITHUB_CLIENT_ID,
+    redirectUri: `http://localhost:${PORT}/api/auth`,
+    scope: 'repo user'
+  });
 });
 
 // Health check endpoint
