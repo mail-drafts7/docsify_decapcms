@@ -9,7 +9,11 @@ const app = express();
 const PORT = 3000;
 
 // Enable CORS for all routes
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://localhost:3000'],
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static('.')); // Serve static files
 
@@ -184,19 +188,49 @@ app.get('/api/auth', async (req, res) => {
       <html>
         <head>
           <title>Authentication Successful</title>
+          <style>
+            body { 
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+              display: flex; 
+              justify-content: center; 
+              align-items: center; 
+              height: 100vh; 
+              margin: 0; 
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+              color: white;
+            }
+            .container { text-align: center; }
+            .spinner { 
+              border: 4px solid rgba(255,255,255,0.3); 
+              border-top: 4px solid white; 
+              border-radius: 50%; 
+              width: 40px; 
+              height: 40px; 
+              animation: spin 1s linear infinite; 
+              margin: 20px auto;
+            }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          </style>
         </head>
         <body>
-          <h1>Authentication Successful!</h1>
-          <p>Redirecting to CMS dashboard...</p>
+          <div class="container">
+            <h1>✅ Authentication Successful!</h1>
+            <div class="spinner"></div>
+            <p>Redirecting to CMS dashboard...</p>
+          </div>
           <script>
             console.log('Auth callback received, setting up authentication...');
             
             // Redirect to admin with token as URL parameter for manual injection
             const token = "${access_token}";
-            const adminUrl = '/admin/index.html?token=' + encodeURIComponent(token) + '#/collections/docs';
+            const adminUrl = '/admin/?token=' + encodeURIComponent(token);
             
             console.log('Redirecting to admin with token parameter...');
-            window.location.href = adminUrl;
+            
+            // Slight delay to show the success message
+            setTimeout(() => {
+              window.location.href = adminUrl;
+            }, 1500);
           </script>
         </body>
       </html>
@@ -250,60 +284,208 @@ app.get('/api/content', async (req, res) => {
   }
 });
 
-// GitHub webhook endpoint for automatic updates
+// API endpoint to save content from CMS
+app.post('/api/save-content', async (req, res) => {
+  try {
+    const { collection, entry } = req.body;
+    
+    if (!collection || !entry) {
+      return res.status(400).json({ error: 'Collection and entry are required' });
+    }
+
+    // Generate filename
+    const slug = entry.slug || entry.data.title?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') || 'untitled';
+    const filename = `${slug}.md`;
+    const filepath = path.join('docs', filename);
+
+    // Create frontmatter
+    const frontmatter = Object.entries(entry.data)
+      .filter(([key]) => key !== 'body')
+      .map(([key, value]) => {
+        if (typeof value === 'string' && value.includes('\n')) {
+          return `${key}: |\n  ${value.replace(/\n/g, '\n  ')}`;
+        }
+        return `${key}: "${value}"`;
+      })
+      .join('\n');
+
+    // Create full content
+    const fullContent = `---\n${frontmatter}\n---\n\n${entry.data.body || ''}`;
+
+    // Save file
+    await fs.writeFile(filepath, fullContent, 'utf-8');
+    
+    console.log(`✅ Content saved: ${filepath}`);
+
+    // Update sidebar after saving
+    setTimeout(async () => {
+      await contentManager.updateSidebar();
+    }, 500);
+
+    res.json({ 
+      success: true, 
+      message: 'Content saved successfully',
+      filepath: filepath 
+    });
+  } catch (error) {
+    console.error('❌ Save content error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Enhanced GitHub webhook endpoint for immediate updates
 app.post('/api/webhook', async (req, res) => {
   try {
-    const { action, commits, pull_request } = req.body;
+    const { action, commits, pull_request, repository } = req.body;
     
-    console.log('📡 Webhook received:', { action, ref: req.body.ref });
+    console.log('📡 Webhook received:', { 
+      action, 
+      ref: req.body.ref,
+      event: req.headers['x-github-event']
+    });
     
-    // Check if this is a push to main branch or PR merge
+    // Check if this is a push to main branch, PR merge, or release
     const isMainBranchPush = req.body.ref === 'refs/heads/main';
     const isPRMerged = action === 'closed' && pull_request?.merged === true;
     const isPublished = action === 'published';
+    const isContentChange = req.headers['x-github-event'] === 'push';
     
-    if (isMainBranchPush || isPRMerged || isPublished) {
-      console.log('🔄 Triggering update process...');
+    if (isMainBranchPush || isPRMerged || isPublished || isContentChange) {
+      console.log('🔄 Triggering immediate update process...');
       
       // Check if any markdown files were modified
       let hasMarkdownChanges = false;
       if (commits) {
         hasMarkdownChanges = commits.some(commit => 
-          commit.added?.some(file => file.endsWith('.md')) ||
-          commit.modified?.some(file => file.endsWith('.md')) ||
-          commit.removed?.some(file => file.endsWith('.md'))
+          commit.added?.some(file => file.match(/\.(md)$/)) ||
+          commit.modified?.some(file => file.match(/\.(md)$/)) ||
+          commit.removed?.some(file => file.match(/\.(md)$/))
         );
-      } else if (isPRMerged) {
-        // For PR merges, assume there might be changes
+      } else {
+        // For PR merges and other events, assume there might be changes
         hasMarkdownChanges = true;
       }
 
       if (hasMarkdownChanges || isPRMerged || isPublished) {
-        console.log('📥 Pulling latest changes from GitHub...');
+        console.log('📥 Content changes detected, updating immediately...');
         
         // Pull latest changes from GitHub
         const { exec } = require('child_process');
-        exec(`GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_personal" git pull origin main`, async (error, stdout, stderr) => {
+        const gitCommand = process.env.NODE_ENV === 'production' 
+          ? 'git pull origin main'
+          : `GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_personal" git pull origin main`;
+          
+        exec(gitCommand, async (error, stdout, stderr) => {
           if (error) {
             console.error('❌ Git pull error:', error);
+            // Even if git pull fails, try to update sidebar with current content
+            setTimeout(async () => {
+              await contentManager.updateSidebar();
+              console.log('⚠️  Sidebar updated with current content (git pull failed)');
+            }, 500);
             return;
           }
           
           console.log('✅ Git pull successful:', stdout);
           
-          // Wait a moment for files to be updated, then update sidebar
+          // Immediate sidebar update
           setTimeout(async () => {
-            console.log('🔄 Updating sidebar...');
-            await contentManager.updateSidebar();
-            console.log('✅ Sidebar updated after PR merge');
-          }, 1000);
+            console.log('🔄 Updating sidebar immediately...');
+            const success = await contentManager.updateSidebar();
+            if (success) {
+              console.log('✅ Sidebar updated successfully after webhook');
+              
+              // Broadcast update to any connected clients
+              if (global.wsClients) {
+                global.wsClients.forEach(client => {
+                  client.send(JSON.stringify({
+                    type: 'content-updated',
+                    message: 'Content updated, please refresh',
+                    timestamp: new Date().toISOString()
+                  }));
+                });
+              }
+            } else {
+              console.error('❌ Sidebar update failed');
+            }
+          }, 500);
         });
+      } else {
+        console.log('ℹ️  No content changes detected, skipping update');
       }
+    } else {
+      console.log('ℹ️  Non-triggering webhook event, ignoring');
     }
     
-    res.status(200).json({ message: 'Webhook processed successfully' });
+    res.status(200).json({ 
+      message: 'Webhook processed successfully',
+      processed: isMainBranchPush || isPRMerged || isPublished || isContentChange,
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
     console.error('❌ Webhook error:', error);
+    res.status(500).json({ error: error.message, timestamp: new Date().toISOString() });
+  }
+});
+
+// WebSocket endpoint for real-time updates (optional)
+const WebSocket = require('ws');
+const server = require('http').createServer(app);
+const wss = new WebSocket.Server({ server: server, path: '/ws' });
+
+global.wsClients = new Set();
+
+wss.on('connection', (ws) => {
+  console.log('📡 WebSocket client connected');
+  global.wsClients.add(ws);
+  
+  ws.on('close', () => {
+    console.log('📡 WebSocket client disconnected');
+    global.wsClients.delete(ws);
+  });
+  
+  // Send welcome message
+  ws.send(JSON.stringify({
+    type: 'connected',
+    message: 'Real-time updates enabled',
+    timestamp: new Date().toISOString()
+  }));
+});
+
+// Enhanced content change notification
+app.post('/api/notify-change', async (req, res) => {
+  try {
+    console.log('🔔 Content change notification received');
+    
+    // Immediate sidebar update
+    const success = await contentManager.updateSidebar();
+    
+    if (success) {
+      // Notify all connected WebSocket clients
+      if (global.wsClients) {
+        global.wsClients.forEach(client => {
+          client.send(JSON.stringify({
+            type: 'sidebar-updated',
+            message: 'Sidebar updated, refreshing...',
+            timestamp: new Date().toISOString()
+          }));
+        });
+      }
+      
+      res.json({ 
+        success: true, 
+        message: 'Content updated and clients notified',
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to update content',
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    console.error('❌ Content notification error:', error);
     res.status(500).json({ error: error.message });
   }
 });

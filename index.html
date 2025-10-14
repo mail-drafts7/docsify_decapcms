@@ -242,7 +242,7 @@
       <button class="login-btn" onclick="toggleDropdown()">Login ▼</button>
       <div class="dropdown-content">
         <a href="#" onclick="selectUser()">User</a>
-        <a href="#" onclick="selectAdmin()">Admin</a>
+        <a href="/admin/" target="_blank" onclick="selectAdmin(); return false;">Admin</a>
       </div>
     </div>
   </div>
@@ -312,7 +312,9 @@
       console.log('Admin selected');
       document.getElementById('loginDropdown').classList.remove('active');
       // Use absolute path to ensure proper routing
-      window.location.href = window.location.origin + '/admin/';
+      setTimeout(() => {
+        window.location.href = '/admin/';
+      }, 100);
     }
     
     // Close dropdown with Escape key

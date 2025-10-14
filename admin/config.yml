@@ -5,7 +5,9 @@ backend:
   client_id: Ov23li5kbNATaXdde6rE
   base_url: http://localhost:3000
   auth_endpoint: api/auth
+  auth_scope: repo
 
+publish_mode: editorial_workflow
 site_url: http://localhost:3000
 display_url: http://localhost:3000
 
