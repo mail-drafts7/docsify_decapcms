@@ -1,13 +1,15 @@
 ---
-title: "API Reference Guide"
-description: "Comprehensive API reference for developers integrating with our platform"
+title: API Reference Guide Test
+description: Comprehensive API reference for developers integrating with our platform
 order: 1
-category: "docs"
-date: "2024-01-15T10:30:00.000Z"
-author: "Technical Team"
-tags: ["API", "Reference", "Documentation"]
+category: docs
+date: 2024-01-15T10:30:00.000Z
+author: Technical Team
+tags:
+  - API
+  - Reference
+  - Documentation
 ---
-
 # API Reference Guide
 
 This comprehensive API reference provides detailed information for developers integrating with our platform.
@@ -40,10 +42,12 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 Retrieve user information.
 
 **Parameters:**
-- `id` (required): User ID
-- `include` (optional): Additional fields to include
+
+* `id` (required): User ID
+* `include` (optional): Additional fields to include
 
 **Response:**
+
 ```json
 {
   "id": "12345",
@@ -58,6 +62,7 @@ Retrieve user information.
 Create a new user account.
 
 **Request Body:**
+
 ```json
 {
   "name": "Jane Smith",
@@ -67,6 +72,7 @@ Create a new user account.
 ```
 
 **Response:**
+
 ```json
 {
   "id": "67890",
@@ -80,11 +86,11 @@ Create a new user account.
 
 The API uses standard HTTP status codes:
 
-- `200` - Success
-- `400` - Bad Request
-- `401` - Unauthorized
-- `404` - Not Found
-- `500` - Internal Server Error
+* `200` - Success
+* `400` - Bad Request
+* `401` - Unauthorized
+* `404` - Not Found
+* `500` - Internal Server Error
 
 Error responses include detailed messages:
 
@@ -104,20 +110,23 @@ Error responses include detailed messages:
 ## Rate Limiting
 
 API requests are limited to:
-- **1000 requests/hour** for authenticated users
-- **100 requests/hour** for unauthenticated requests
+
+* **1000 requests/hour** for authenticated users
+* **100 requests/hour** for unauthenticated requests
 
 Rate limit headers are included in responses:
-- `X-RateLimit-Limit`: Maximum requests allowed
-- `X-RateLimit-Remaining`: Requests remaining
-- `X-RateLimit-Reset`: Time when limit resets
+
+* `X-RateLimit-Limit`: Maximum requests allowed
+* `X-RateLimit-Remaining`: Requests remaining
+* `X-RateLimit-Reset`: Time when limit resets
 
 ## SDKs and Libraries
 
 Official SDKs are available for:
-- **JavaScript/Node.js**: `npm install @example/api-sdk`
-- **Python**: `pip install example-api-sdk`
-- **PHP**: `composer require example/api-sdk`
+
+* **JavaScript/Node.js**: `npm install @example/api-sdk`
+* **Python**: `pip install example-api-sdk`
+* **PHP**: `composer require example/api-sdk`
 
 ### JavaScript Example
 
@@ -145,6 +154,7 @@ Set up webhooks to receive real-time notifications:
 3. Handle webhook events in your application
 
 **Webhook Payload Example:**
+
 ```json
 {
   "event": "user.created",
