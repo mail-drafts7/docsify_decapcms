@@ -3,10 +3,14 @@ const cors = require('cors');
 const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
+const GitHubSecretsManager = require('./lib/github-secrets-manager');
 require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
+
+// Initialize GitHub Secrets Manager
+const secretsManager = new GitHubSecretsManager();
 
 // Enable CORS for all routes
 app.use(cors({
@@ -156,7 +160,7 @@ class ContentManager {
 
 const contentManager = new ContentManager();
 
-// OAuth callback endpoint
+// OAuth callback endpoint with dynamic GitHub API secret fetching
 app.get('/api/auth', async (req, res) => {
   const { code } = req.query;
   
@@ -164,11 +168,16 @@ app.get('/api/auth', async (req, res) => {
     return res.status(400).json({ error: 'Authorization code not provided' });
   }
 
+  let loginSecrets = null;
   try {
-    // Exchange code for access token
+    // 🔐 STEP 1: Fetch OAuth secrets from GitHub API dynamically
+    loginSecrets = await secretsManager.fetchSecretsForLogin();
+    console.log('🔑 Secrets fetched successfully for OAuth exchange');
+    
+    // 🔐 STEP 2: Exchange code for access token using fetched secrets
     const response = await axios.post('https://github.com/login/oauth/access_token', {
-      client_id: process.env.GITHUB_CLIENT_ID,
-      client_secret: process.env.GITHUB_CLIENT_SECRET,
+      client_id: loginSecrets.GITHUB_CLIENT_ID,
+      client_secret: loginSecrets.GITHUB_CLIENT_SECRET,
       code: code
     }, {
       headers: {
@@ -176,6 +185,11 @@ app.get('/api/auth', async (req, res) => {
         'Content-Type': 'application/json'
       }
     });
+
+    // 🔐 STEP 3: Clear secrets from memory immediately after use
+    secretsManager.clearSecrets(loginSecrets);
+    loginSecrets = null;
+    console.log('🧹 OAuth secrets cleared from memory after token exchange');
 
     const { access_token, error } = response.data;
     
@@ -241,15 +255,35 @@ app.get('/api/auth', async (req, res) => {
   }
 });
 
-// Serve DecapCMS config with environment variables injected
+// Serve DecapCMS config with dynamically fetched GitHub secrets
 app.get('/api/admin/config', async (req, res) => {
   try {
     const configContent = await fs.readFile(__dirname + '/admin/config.yml', 'utf-8');
     
-    // Replace placeholder with actual client ID from environment
+    let clientId = '';
+    try {
+      // 🔐 Fetch Client ID from GitHub API dynamically for config generation
+      console.log('🔐 Fetching Client ID from GitHub for admin config...');
+      const configSecrets = await secretsManager.fetchSecretsForLogin();
+      clientId = configSecrets.GITHUB_CLIENT_ID;
+      
+      // Clear secrets immediately after getting client ID
+      secretsManager.clearSecrets(configSecrets);
+      console.log('✅ Client ID fetched and config secrets cleared');
+    } catch (error) {
+      console.warn('⚠️  Failed to fetch Client ID from GitHub, trying fallback...');
+      clientId = process.env.GITHUB_CLIENT_ID || '';
+      if (clientId) {
+        console.log('✅ Using fallback Client ID from environment');
+      } else {
+        console.error('❌ No Client ID available from any source');
+      }
+    }
+    
+    // Replace placeholder with dynamically fetched client ID
     const updatedConfig = configContent.replace(
       '{{GITHUB_CLIENT_ID}}', 
-      process.env.GITHUB_CLIENT_ID || ''
+      clientId
     );
     
     res.setHeader('Content-Type', 'text/yaml');
