@@ -128,11 +128,23 @@
         const url = args[0];
         if (typeof url === 'string' && url.includes('github.com/login/oauth/authorize')) {
           console.log('Intercepting OAuth fetch request - redirecting');
-          const clientId = 'Ov23li5kbNATaXdde6rE';
-          const redirectUri = 'http://localhost:3000/api/auth';
-          const scope = 'repo user';
-          const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
-          window.location.href = authUrl;
+          // Get client ID from config dynamically
+          fetch('/api/admin/config')
+            .then(res => res.text())
+            .then(yamlText => {
+              const match = yamlText.match(/client_id:\s*(.+)/);
+              const clientId = match ? match[1].trim() : 'CLIENT_ID_NOT_CONFIGURED';
+              
+              const redirectUri = 'http://localhost:3000/api/auth';
+              const scope = 'repo user';
+              const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
+              
+              window.location.href = authUrl;
+            })
+            .catch(error => {
+              console.error('Failed to get client ID:', error);
+              alert('Configuration error: Unable to load client ID');
+            });
           return new Promise(() => {}); // Never resolve to block original flow
         }
         return originalFetch.apply(this, args);
@@ -151,26 +163,38 @@
             }
             
             // Add our custom handler
-            newButton.addEventListener('click', (e) => {
+            newButton.addEventListener('click', async (e) => {
               e.preventDefault();
               e.stopPropagation();
               e.stopImmediatePropagation();
               console.log('Login button clicked - redirecting to GitHub OAuth');
               
-              const clientId = 'Ov23li5kbNATaXdde6rE';
-              const redirectUri = 'http://localhost:3000/api/auth';
-              const scope = 'repo user';
-              
-              // Check if user was recently logged out - force fresh auth if so
-              const wasLoggedOut = localStorage.getItem('cms-logged-out');
-              const forceAuth = wasLoggedOut ? '&prompt=login' : '';
-              
-              const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}${forceAuth}`;
-              
-              // Clear the logout flag
-              localStorage.removeItem('cms-logged-out');
-              
-              window.location.href = authUrl;
+              try {
+                // Get client ID from config dynamically
+                const clientId = await fetch('/api/admin/config')
+                  .then(res => res.text())
+                  .then(yamlText => {
+                    const match = yamlText.match(/client_id:\s*(.+)/);
+                    return match ? match[1].trim() : 'CLIENT_ID_NOT_CONFIGURED';
+                  });
+                
+                const redirectUri = 'http://localhost:3000/api/auth';
+                const scope = 'repo user';
+                
+                // Check if user was recently logged out - force fresh auth if so
+                const wasLoggedOut = localStorage.getItem('cms-logged-out');
+                const forceAuth = wasLoggedOut ? '&prompt=login' : '';
+                
+                const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}${forceAuth}`;
+                
+                // Clear the logout flag
+                localStorage.removeItem('cms-logged-out');
+                
+                window.location.href = authUrl;
+              } catch (error) {
+                console.error('Failed to get client ID:', error);
+                alert('Configuration error: Unable to load client ID');
+              }
             });
           }
         });

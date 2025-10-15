@@ -6,8 +6,8 @@ node_modules/
 .env.local
 .env.production
 
-# Secrets (fetched via API only)
-# .secrets.json should be in repository for API access
+# Secrets - NEVER commit to repository
+.secrets.json
 
 # Logs
 logs
