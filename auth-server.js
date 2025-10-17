@@ -4,13 +4,15 @@ const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
 const GitHubSecretsManager = require('./lib/github-secrets-manager');
+const UserManagement = require('./lib/user-management');
 require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
 
-// Initialize GitHub Secrets Manager
+// Initialize GitHub Secrets Manager and User Management
 const secretsManager = new GitHubSecretsManager();
+const userManager = new UserManagement();
 
 // Enable CORS for all routes
 app.use(cors({
@@ -258,7 +260,7 @@ app.get('/api/auth', async (req, res) => {
 // Serve DecapCMS config with dynamically fetched GitHub secrets
 app.get('/api/admin/config', async (req, res) => {
   try {
-    const configContent = await fs.readFile(__dirname + '/admin/config.yml', 'utf-8');
+    const configContent = await fs.readFile(__dirname + '/admin/config-admin-review.yml', 'utf-8');
     
     let clientId = '';
     try {
@@ -528,7 +530,7 @@ app.post('/api/notify-change', async (req, res) => {
 class GitHubIntegration {
   constructor(token) {
     this.token = token;
-    this.baseUrl = 'https://api.github.com/repos/mail-drafts7/docsify_decapcms';
+    this.baseUrl = 'https://api.github.com/repos/twlabs/warp37-spike-docsify-decapcms';
   }
 
   async createPullRequest(title, body, head, base = 'main') {
@@ -609,6 +611,105 @@ app.post('/api/create-pr', async (req, res) => {
   } catch (error) {
     console.error('PR creation error:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// User login endpoint (username/password)
+app.post('/api/user-login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    // Load users from local file
+    const users = await userManager.loadUsers();
+    const user = users.find(u => 
+      (u.username === username || u.email === username) && 
+      u.password === password && 
+      u.active
+    );
+
+    if (!user) {
+      console.log(`🚫 Login failed for username: ${username}`);
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    // Update last login
+    await userManager.updateUserLastLogin(user.id);
+
+    // Generate simple token (in production, use JWT)
+    const token = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
+    
+    console.log(`✅ User login successful: ${user.name} (${user.role})`);
+    
+    res.json({
+      success: true,
+      token: token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        permissions: userManager.getRoleConfig(user.role).permissions
+      }
+    });
+  } catch (error) {
+    console.error('❌ User login error:', error);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// API endpoints for user management (Admin only)
+app.get('/api/users', async (req, res) => {
+  try {
+    // TODO: Add authentication middleware
+    const users = await userManager.getAllUsers();
+    const safeUsers = users.map(user => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      active: user.active,
+      join_date: user.join_date,
+      last_login: user.last_login,
+      created_by: user.created_by
+    }));
+    
+    res.json({ users: safeUsers });
+  } catch (error) {
+    console.error('❌ Get users error:', error);
+    res.status(500).json({ error: 'Failed to get users' });
+  }
+});
+
+app.post('/api/users', async (req, res) => {
+  try {
+    // TODO: Add authentication middleware and admin check
+    const userData = req.body;
+    
+    // Add username and password fields for local authentication
+    if (!userData.username || !userData.password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+    
+    const newUser = await userManager.createUser(userData);
+    
+    res.json({ 
+      success: true, 
+      message: 'User created successfully',
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        active: newUser.active
+      }
+    });
+  } catch (error) {
+    console.error('❌ Create user error:', error);
+    res.status(400).json({ error: error.message });
   }
 });
 

@@ -246,6 +246,28 @@
       </div>
     </div>
   </div>
+
+  <!-- User Login Modal -->
+  <div id="userLoginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); width: 300px;">
+      <h3 style="margin-top: 0; color: #2c3e50; text-align: center;">User Login</h3>
+      <form id="userLoginForm" onsubmit="handleUserLogin(event)">
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; color: #555;">Username:</label>
+          <input type="text" id="username" required style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+        </div>
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 5px; color: #555;">Password:</label>
+          <input type="password" id="password" required style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="submit" style="flex: 1; background: #42b883; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">Login</button>
+          <button type="button" onclick="closeUserLoginForm()" style="flex: 1; background: #95a5a6; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer;">Cancel</button>
+        </div>
+      </form>
+      <div id="loginError" style="color: #e74c3c; margin-top: 10px; text-align: center; display: none;"></div>
+    </div>
+  </div>
   <script>
     window.$docsify = {
       name: 'Knowledge Pack',
@@ -300,11 +322,10 @@
     }
     
     function selectUser() {
-      // Handle user selection
+      // Handle user selection - show login form
       console.log('User selected');
       document.getElementById('loginDropdown').classList.remove('active');
-      // Add user functionality here if needed
-      alert('User login functionality - to be implemented');
+      showUserLoginForm();
     }
     
     function selectAdmin() {
@@ -317,10 +338,68 @@
       }, 100);
     }
     
+    // User Login Form Functions
+    function showUserLoginForm() {
+      document.getElementById('userLoginModal').style.display = 'block';
+      document.getElementById('username').focus();
+    }
+    
+    function closeUserLoginForm() {
+      document.getElementById('userLoginModal').style.display = 'none';
+      document.getElementById('userLoginForm').reset();
+      document.getElementById('loginError').style.display = 'none';
+    }
+    
+    async function handleUserLogin(event) {
+      event.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const errorDiv = document.getElementById('loginError');
+      
+      try {
+        const response = await fetch('/api/user-login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          // Login successful - store user data and redirect to dashboard
+          localStorage.setItem('userToken', result.token);
+          localStorage.setItem('currentUser', JSON.stringify(result.user));
+          
+          // Redirect to user dashboard
+          window.location.href = '/user-dashboard.html';
+        } else {
+          // Show error
+          errorDiv.textContent = result.error || 'Login failed';
+          errorDiv.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.style.display = 'block';
+      }
+    }
+    
     // Close dropdown with Escape key
     document.addEventListener('keydown', function(event) {
       if (event.key === 'Escape') {
         document.getElementById('loginDropdown').classList.remove('active');
+        closeUserLoginForm();
+      }
+    });
+    
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+      const modal = document.getElementById('userLoginModal');
+      if (event.target === modal) {
+        closeUserLoginForm();
       }
     });
     

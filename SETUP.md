@@ -7,8 +7,8 @@ This repository contains **NO secrets**. You must provide your own GitHub OAuth 
 
 ### 1. **Clone Repository**
 ```bash
-git clone https://github.com/mail-drafts7/docsify_decapcms.git
-cd docsify_decapcms
+git clone https://github.com/twlabs/warp37-spike-docsify-decapcms.git
+cd warp37-spike-docsify-decapcms
 npm install
 ```
 
@@ -128,7 +128,7 @@ node -e "require('dotenv').config(); console.log('Client ID:', !!process.env.GIT
 
 ### **File Structure:**
 ```
-docsify_decapcms/
+warp37-spike-docsify-decapcms/
 ├── admin/           # CMS admin interface
 ├── docs/           # Content managed by CMS
 ├── lib/            # Secrets management utilities

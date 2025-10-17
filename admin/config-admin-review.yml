@@ -1,0 +1,178 @@
+backend:
+  name: github
+  repo: twlabs/warp37-spike-docsify-decapcms
+  branch: main
+  client_id: {{GITHUB_CLIENT_ID}}
+  base_url: http://localhost:3000
+  auth_endpoint: api/auth
+  auth_scope: repo
+
+# Editorial workflow with role-based permissions
+publish_mode: editorial_workflow
+site_url: http://localhost:3000
+display_url: http://localhost:3000
+
+# User roles and permissions
+roles:
+  admin:
+    label: "Administrator" 
+    permissions:
+      - publish
+      - delete
+      - create
+      - edit
+      - review
+      - manage_users
+    auto_publish: true
+  editor:
+    label: "Editor"
+    permissions:
+      - create
+      - edit
+      - draft
+    auto_publish: false
+  contributor:
+    label: "Contributor"
+    permissions:
+      - create
+      - draft
+    auto_publish: false
+
+# User management
+users:
+  - email: "admin@docsify-cms.local"
+    role: admin
+    name: "System Administrator"
+  - email: "editor@docsify-cms.local" 
+    role: editor
+    name: "Content Editor"
+  - email: "contributor@docsify-cms.local"
+    role: contributor
+    name: "Content Contributor"
+
+media_folder: assets/images
+public_folder: /assets/images
+
+# Enhanced collections with role-based access
+collections:
+  - name: "docs"
+    label: "📚 Documentation"
+    label_singular: "Document"
+    folder: "docs"
+    create: true
+    slug: "{{slug}}"
+    summary: "{{title}} - {{author}} ({{status}})"
+    sortable_fields: ["title", "date", "order", "author", "status"]
+    view_filters:
+      - label: "Drafts"
+        field: status
+        pattern: "draft"
+      - label: "In Review"
+        field: status  
+        pattern: "in_review"
+      - label: "Ready to Publish"
+        field: status
+        pattern: "ready"
+      - label: "Published"
+        field: status
+        pattern: "published"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "string", required: false }
+      - { label: "Order", name: "order", widget: "number", default: 1, value_type: "int" }
+      - { label: "Category", name: "category", widget: "hidden", default: "docs" }
+      - { label: "Date", name: "date", widget: "datetime", required: false }
+      - { label: "Author", name: "author", widget: "string", required: true, default: "{{user.name}}" }
+      - { label: "Status", name: "status", widget: "select", options: ["draft", "in_review", "ready", "published"], default: "draft" }
+      - { label: "Reviewer", name: "reviewer", widget: "string", required: false }
+      - { label: "Review Notes", name: "review_notes", widget: "text", required: false }
+      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Body", name: "body", widget: "markdown" }
+      
+  - name: "user_management"
+    label: "👥 User Management"
+    label_singular: "User"
+    folder: "admin/users"
+    create: true
+    slug: "{{username}}"
+    summary: "{{name}} ({{role}}) - {{username}}"
+    fields:
+      - { label: "Name", name: "name", widget: "string", required: true }
+      - { label: "Email", name: "email", widget: "string", required: true }
+      - { label: "Username", name: "username", widget: "string", required: true, hint: "Username for login (minimum 3 characters)" }
+      - { label: "Password", name: "password", widget: "string", required: true, hint: "Password for login (minimum 6 characters)" }
+      - { label: "Role", name: "role", widget: "select", options: ["admin", "editor", "contributor"], required: true }
+      - { label: "Active", name: "active", widget: "boolean", default: true }
+      - { label: "Join Date", name: "join_date", widget: "datetime", default: "{{date}}" }
+
+# Editorial workflow configuration
+workflow:
+  states:
+    draft:
+      label: "📝 Draft"
+      color: "#ffa500"
+      description: "Content in draft stage"
+      next_states: ["in_review"]
+      permissions:
+        create: ["admin", "editor", "contributor"]
+        edit: ["admin", "editor", "contributor"]
+        delete: ["admin", "author"]
+    in_review:
+      label: "👀 In Review" 
+      color: "#0066cc"
+      description: "Content under review"
+      next_states: ["ready", "draft"]
+      permissions:
+        review: ["admin", "editor"]
+        edit: ["admin", "reviewer"]
+        comment: ["admin", "editor", "author"]
+    ready:
+      label: "✅ Ready to Publish"
+      color: "#00cc00"
+      description: "Content approved and ready for publication"
+      next_states: ["published", "draft"]
+      permissions:
+        publish: ["admin"]
+        edit: ["admin"]
+    published:
+      label: "🌐 Published"
+      color: "#009900"
+      description: "Content is live"
+      next_states: ["draft"]
+      permissions:
+        unpublish: ["admin"]
+        edit: ["admin"]
+
+# Enhanced editor configuration
+editor:
+  preview: true
+  frame: true
+  toolbar_buttons:
+    - bold
+    - italic
+    - code
+    - link
+    - heading-one
+    - heading-two
+    - heading-three
+    - heading-four
+    - heading-five
+    - heading-six
+    - quote
+    - bulleted-list
+    - numbered-list
+
+# Notification settings
+notifications:
+  email:
+    enabled: true
+    on_review_request: true
+    on_status_change: true
+    on_publish: true
+    admin_email: "admin@docsify-cms.local"
+
+# Audit trail
+audit:
+  enabled: true
+  track_changes: true
+  log_file: "admin/audit.log"

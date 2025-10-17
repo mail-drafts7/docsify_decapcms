@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - Knowledge Packs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .welcome-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .card-description {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .card-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .card-link:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🚀 Knowledge Packs</div>
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <div>
+                <div><strong id="userName">Loading...</strong></div>
+                <div style="font-size: 0.8rem; color: #666;" id="userRole">User</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="welcome-card">
+            <h1>Welcome to Your Dashboard! 👋</h1>
+            <p>Access your personalized knowledge resources and documentation.</p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="docsCount">-</div>
+                    <div class="stat-label">Documentation Articles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="lastLogin">-</div>
+                    <div class="stat-label">Days Since Last Login</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="userSince">-</div>
+                    <div class="stat-label">Member Since</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-icon">📚</div>
+                <div class="card-title">Browse Documentation</div>
+                <div class="card-description">
+                    Access the complete knowledge base with documentation, tutorials, and guides.
+                </div>
+                <a href="/" class="card-link">Browse Docs</a>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">🔍</div>
+                <div class="card-title">Search Knowledge Base</div>
+                <div class="card-description">
+                    Quickly find the information you need with our powerful search functionality.
+                </div>
+                <a href="/?search=true" class="card-link">Start Search</a>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">📊</div>
+                <div class="card-title">API Gateway Pack</div>
+                <div class="card-description">
+                    Learn about API Gateway implementation, setup, and best practices.
+                </div>
+                <a href="/docs/api-gateway-overview" class="card-link">View Guide</a>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">🔐</div>
+                <div class="card-title">Authentication Service</div>
+                <div class="card-description">
+                    Understand authentication patterns and security implementations.
+                </div>
+                <a href="/docs/auth-service-overview" class="card-link">Learn More</a>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">⚡</div>
+                <div class="card-title">Data Processing</div>
+                <div class="card-description">
+                    Real-time data processing techniques and implementation strategies.
+                </div>
+                <a href="/docs/data-processing-overview" class="card-link">Explore</a>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">✏️</div>
+                <div class="card-title">Edit Documentation</div>
+                <div class="card-description">
+                    Create and edit markdown files directly from your dashboard with live preview.
+                </div>
+                <a href="#" class="card-link" onclick="showFileEditor()">Open Editor</a>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">📱</div>
+                <div class="card-title">Quick Access</div>
+                <div class="card-description">
+                    Bookmark your most frequently accessed documentation for quick reference.
+                </div>
+                <a href="#" class="card-link" onclick="showBookmarks()">Manage Bookmarks</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Editor Modal -->
+    <div id="fileEditorModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000;">
+        <div style="position: absolute; top: 5%; left: 5%; width: 90%; height: 90%; background: white; border-radius: 15px; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+            
+            <!-- Header -->
+            <div style="padding: 1rem 2rem; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; border-radius: 15px 15px 0 0;">
+                <h2 style="color: #333; margin: 0;">📝 Markdown Editor</h2>
+                <button onclick="closeFileEditor()" style="background: #dc3545; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">✕ Close</button>
+            </div>
+            
+            <!-- File Selection -->
+            <div style="padding: 1rem 2rem; border-bottom: 1px solid #eee; background: #f8f9fa;">
+                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                    <div style="flex: 1;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 0.5rem;">Select File to Edit:</label>
+                        <select id="fileList" onchange="loadSelectedFile()" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px; width: 100%; min-width: 300px;">
+                            <option value="">Choose a file to edit...</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 0.5rem;">File Name:</label>
+                        <input type="text" id="fileName" placeholder="document-name.md" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-self: flex-end;">
+                        <button id="saveButton" onclick="saveFile()" style="background: #28a745; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-weight: bold;">💾 Save File</button>
+                        <button id="previewButton" onclick="previewFile()" style="background: #17a2b8; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-weight: bold;">👁️ Preview</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Editor and Preview -->
+            <div style="flex: 1; display: flex; min-height: 0;">
+                <!-- Editor Panel -->
+                <div style="flex: 1; display: flex; flex-direction: column; border-right: 1px solid #eee;">
+                    <div style="padding: 0.5rem 1rem; background: #f8f9fa; border-bottom: 1px solid #eee; font-weight: bold; color: #666;">
+                        ✏️ Markdown Editor
+                    </div>
+                    <textarea 
+                        id="markdownEditor" 
+                        oninput="updatePreview()"
+                        placeholder="Start typing your markdown content..."
+                        style="flex: 1; padding: 1rem; border: none; outline: none; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; font-size: 14px; line-height: 1.6; resize: none;"
+                    ></textarea>
+                </div>
+                
+                <!-- Preview Panel -->
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <div style="padding: 0.5rem 1rem; background: #f8f9fa; border-bottom: 1px solid #eee; font-weight: bold; color: #666;">
+                        👁️ Live Preview
+                    </div>
+                    <div 
+                        id="markdownPreview" 
+                        style="flex: 1; padding: 1rem; overflow-y: auto; background: white;"
+                    >
+                        <p style="color: #999; font-style: italic;">Preview will appear here as you type...</p>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        // Get user data from localStorage or URL parameters
+        let currentUser = null;
+
+        function initializeDashboard() {
+            // Try to get user data from localStorage first
+            const storedUser = localStorage.getItem('currentUser');
+            
+            if (storedUser) {
+                currentUser = JSON.parse(storedUser);
+                updateUserInfo();
+                loadDashboardData();
+            } else {
+                // If no stored user data, redirect to login
+                window.location.href = '/';
+            }
+        }
+
+        function updateUserInfo() {
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.name || 'User';
+                document.getElementById('userRole').textContent = currentUser.role || 'Member';
+                document.getElementById('userAvatar').textContent = (currentUser.name || 'User').charAt(0).toUpperCase();
+                
+                // Calculate member since
+                if (currentUser.join_date) {
+                    const joinDate = new Date(currentUser.join_date);
+                    const now = new Date();
+                    const daysDiff = Math.floor((now - joinDate) / (1000 * 60 * 60 * 24));
+                    document.getElementById('userSince').textContent = `${daysDiff} days`;
+                }
+
+                // Calculate last login
+                if (currentUser.last_login) {
+                    const lastLogin = new Date(currentUser.last_login);
+                    const now = new Date();
+                    const daysDiff = Math.floor((now - lastLogin) / (1000 * 60 * 60 * 24));
+                    document.getElementById('lastLogin').textContent = daysDiff === 0 ? 'Today' : `${daysDiff} days`;
+                } else {
+                    document.getElementById('lastLogin').textContent = 'First login';
+                }
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+                // Load content count
+                const response = await fetch('/api/content');
+                if (response.ok) {
+                    const content = await response.json();
+                    let totalDocs = 0;
+                    Object.values(content).forEach(folder => {
+                        totalDocs += folder.length;
+                    });
+                    document.getElementById('docsCount').textContent = totalDocs;
+                }
+            } catch (error) {
+                console.log('Could not load dashboard data:', error);
+                document.getElementById('docsCount').textContent = '10+';
+            }
+        }
+
+        function logout() {
+            // Clear user data
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('userToken');
+            
+            // Redirect to home
+            window.location.href = '/';
+        }
+
+        function showBookmarks() {
+            alert('Bookmark functionality coming soon! For now, you can use your browser\'s bookmark feature.');
+        }
+
+        function showFileEditor() {
+            document.getElementById('fileEditorModal').style.display = 'block';
+            loadFileList();
+        }
+
+        function closeFileEditor() {
+            document.getElementById('fileEditorModal').style.display = 'none';
+        }
+
+        async function loadFileList() {
+            try {
+                const response = await fetch('/api/content');
+                if (response.ok) {
+                    const content = await response.json();
+                    const fileList = document.getElementById('fileList');
+                    fileList.innerHTML = '';
+                    
+                    // Add option to create new file
+                    const newFileOption = document.createElement('option');
+                    newFileOption.value = 'NEW_FILE';
+                    newFileOption.textContent = '📝 + Create New Document';
+                    fileList.appendChild(newFileOption);
+                    
+                    // Add separator
+                    const separator = document.createElement('option');
+                    separator.disabled = true;
+                    separator.textContent = '──────────────────';
+                    fileList.appendChild(separator);
+                    
+                    // Add existing files organized by category
+                    Object.entries(content).forEach(([folder, files]) => {
+                        if (files.length > 0) {
+                            // Add folder header
+                            const folderHeader = document.createElement('option');
+                            folderHeader.disabled = true;
+                            folderHeader.textContent = `📁 ${folder.toUpperCase()} (${files.length} files)`;
+                            folderHeader.style.fontWeight = 'bold';
+                            fileList.appendChild(folderHeader);
+                            
+                            // Sort files by order, then by title
+                            const sortedFiles = files.sort((a, b) => {
+                                if (a.order !== b.order) return a.order - b.order;
+                                return a.title.localeCompare(b.title);
+                            });
+                            
+                            sortedFiles.forEach(file => {
+                                const option = document.createElement('option');
+                                option.value = `${folder}/${file.name}`;
+                                option.textContent = `   ✏️ ${file.title}`;
+                                option.setAttribute('data-file-info', JSON.stringify(file));
+                                fileList.appendChild(option);
+                            });
+                        }
+                    });
+                    
+                    // Update file count in editor header
+                    const totalFiles = Object.values(content).reduce((sum, files) => sum + files.length, 0);
+                    document.querySelector('#fileEditorModal h2').textContent = `📝 Markdown Editor (${totalFiles} files available)`;
+                }
+            } catch (error) {
+                console.error('Error loading files:', error);
+                // Show error in dropdown
+                const fileList = document.getElementById('fileList');
+                fileList.innerHTML = '<option value="">❌ Error loading files</option>';
+            }
+        }
+
+        async function loadSelectedFile() {
+            const fileList = document.getElementById('fileList');
+            const selectedFile = fileList.value;
+            const editor = document.getElementById('markdownEditor');
+            const fileNameInput = document.getElementById('fileName');
+            
+            if (selectedFile === 'NEW_FILE') {
+                editor.value = `---
+title: "New Document"
+order: 1
+category: "docs"
+---
+
+# New Document
+
+Write your content here...
+`;
+                fileNameInput.value = 'new-document.md';
+                updatePreview();
+                return;
+            }
+            
+            try {
+                // Load file content from server
+                const response = await fetch(`/${selectedFile}`);
+                if (response.ok) {
+                    const content = await response.text();
+                    editor.value = content;
+                    fileNameInput.value = selectedFile.split('/').pop();
+                    updatePreview();
+                } else {
+                    editor.value = 'Error loading file';
+                }
+            } catch (error) {
+                console.error('Error loading file:', error);
+                editor.value = 'Error loading file';
+            }
+        }
+
+        function updatePreview() {
+            const editor = document.getElementById('markdownEditor');
+            const preview = document.getElementById('markdownPreview');
+            const content = editor.value;
+            
+            // Simple markdown to HTML conversion (basic implementation)
+            let html = content
+                // Remove frontmatter
+                .replace(/^---[\s\S]*?---/, '')
+                // Headers
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                // Bold
+                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                // Italic
+                .replace(/\*(.*)\*/gim, '<em>$1</em>')
+                // Code blocks
+                .replace(/```[\s\S]*?```/gim, '<pre><code>$&</code></pre>')
+                .replace(/```/gim, '')
+                // Inline code
+                .replace(/`(.*?)`/gim, '<code>$1</code>')
+                // Links
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2">$1</a>')
+                // Line breaks
+                .replace(/\n/gim, '<br>');
+            
+            preview.innerHTML = html;
+        }
+
+        async function saveFile() {
+            const fileName = document.getElementById('fileName').value;
+            const content = document.getElementById('markdownEditor').value;
+            const saveButton = document.getElementById('saveButton');
+            
+            if (!fileName.endsWith('.md')) {
+                alert('File name must end with .md');
+                return;
+            }
+            
+            saveButton.textContent = 'Saving...';
+            saveButton.disabled = true;
+            
+            try {
+                // Parse frontmatter and content
+                const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---/);
+                let title = 'Untitled';
+                let order = 999;
+                let category = 'docs';
+                
+                if (frontmatterMatch) {
+                    const frontmatter = frontmatterMatch[1];
+                    const titleMatch = frontmatter.match(/title:\s*["'](.+)["']/);
+                    const orderMatch = frontmatter.match(/order:\s*(\d+)/);
+                    const categoryMatch = frontmatter.match(/category:\s*["'](.+)["']/);
+                    
+                    if (titleMatch) title = titleMatch[1];
+                    if (orderMatch) order = parseInt(orderMatch[1]);
+                    if (categoryMatch) category = categoryMatch[1];
+                }
+                
+                const body = content.replace(/^---[\s\S]*?---\s*/, '');
+                
+                const response = await fetch('/api/save-content', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                    },
+                    body: JSON.stringify({
+                        collection: 'docs',
+                        entry: {
+                            slug: fileName.replace('.md', ''),
+                            data: {
+                                title: title,
+                                order: order,
+                                category: category,
+                                body: body
+                            }
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('File saved successfully!');
+                    loadFileList(); // Refresh file list
+                } else {
+                    const error = await response.json();
+                    alert(`Error saving file: ${error.error || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Error saving file:', error);
+                alert('Error saving file. Please try again.');
+            } finally {
+                saveButton.textContent = 'Save File';
+                saveButton.disabled = false;
+            }
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+    </script>
+</body>
+</html>

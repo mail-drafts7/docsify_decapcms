@@ -1,5 +1,5 @@
 {
-  "name": "docsify-decapcms",
+  "name": "warp37-spike-docsify-decapcms",
   "version": "1.0.0",
   "description": "Docsify with DecapCMS integration",
   "main": "auth-server.js",

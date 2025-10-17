@@ -34,7 +34,7 @@ git --version      # Should show git version
 ### Step 1: Clone & Install
 ```bash
 git clone <your-repository-url>
-cd docsify_decapcms
+cd warp37-spike-docsify-decapcms
 npm install
 ```
 

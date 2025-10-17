@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: mail-drafts7/docsify_decapcms
+  repo: twlabs/warp37-spike-docsify-decapcms
   branch: main
   client_id: {{GITHUB_CLIENT_ID}}
   base_url: http://localhost:3000

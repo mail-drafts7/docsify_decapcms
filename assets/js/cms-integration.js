@@ -6,7 +6,7 @@
 
     // Configuration
     const CONFIG = {
-        githubRepo: 'mail-drafts7/docsify_decapcms',
+        githubRepo: 'twlabs/warp37-spike-docsify-decapcms',
         githubBranch: 'main',
         sidebarFile: '_sidebar.md',
         contentFolders: ['docs', 'tutorials', 'guides'],
